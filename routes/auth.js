@@ -4,6 +4,8 @@ const bcrypt = require('bcrypt');
 const router = express.Router();
 
 const User = require('../models/user');
+const { loggedIn } = require('../helpers/is-logged');
+const { notLoggedIn } = require('../helpers/is-not-logged');
 
 router.get('/me', function(req, res, next) {
   console.log('me');
@@ -17,64 +19,78 @@ router.get('/me', function(req, res, next) {
   }
 });
 
-router.post('/login', function(req, res, next) {
-  console.log('login');
+router.post('/login', notLoggedIn(), function(req, res, next) {
+  console.log('login: ',req.body);
   if(req.session.currentUser)
   {
     res.status(401).json({ error: 'unauthorized' });
   }
-  const userName = req.body.username;
+  const email = req.body.email;
   const password = req.body.password;
 
-  if(!username || !password)
+  console.log('email: ', email);
+  console.log('password: ', password);
+
+  if(!email || !password)
   {
     res.status(422).json({ error: 'validation' });
   }
-
-  User.findOne({ userName })
+  console.log('1');
+  User.findOne({ email })
   .then(( user ) => {
     if(!user)
     {
+      console.log('2');
       res.status(404).json({ error: 'not-found' });
     }
     if(bcrypt.compareSync(password, user.password))
     {
+      console.log('3');
       req.session.currentUser = user;
       res.json(user);
     }
     else
     {
+      console.log('4');
       res.status(404).json({ error: 'not-found' });
     }
   })
+  return;
 });
 
-router.post('/signup', function(req, res, next) {
+router.post('/signup', notLoggedIn(),function(req, res, next) {
   console.log('signup');
   const email = req.body.email;
   const password = req.body.password;
 
+  console.log('1');
   if(!email || !password)
   {
-    res.status(422).json({ error: 'validation' })
+    console.log('2');
+    res.status(422).json({ error: 'validation' });
   }
   User.findOne({ email })
   .then((user) => {
     if( user )
     {
+      console.log('3');
       res.status(422).json({ error: 'username-not-unique' });
     }
+    console.log('4');
     
     const salt = bcrypt.genSaltSync(10);
     const hashPass = bcrypt.hashSync(password, salt);
 
     const newUser = User({
-      userName,
+      email,
       password: hashPass,
     });
+  console.log('5');
 
     return newUser.save()
     .then(() => {
+      console.log('6');
+
       req.session.currentUser = newUser;
       req.json(newUser);
     })
@@ -82,13 +98,13 @@ router.post('/signup', function(req, res, next) {
 
 });
 
-router.post('/logout', function(req, res, next) {
+router.post('/logout', loggedIn(), function(req, res, next) {
   console.log('logout');
   delete req.session.currentUser;
   res.status(204).send();
 });
 
-router.get('/private', function(req, res, next) {
+router.get('/private', loggedIn(), function(req, res, next) {
   console.log('private');
   if(req.session.currentUser)
   {

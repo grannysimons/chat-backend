@@ -5,27 +5,38 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const logger = require('morgan');
 const session = require('express-session');
+const MongoStore = require("connect-mongo")(session);
 
 const authRouter = require('./routes/auth');
 const chatRouter = require('./routes/chat');
 
+require('dotenv').config();
+const mongoose = require('./database');
+
 const app = express();
 
-require('dotenv').config();
 
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
+  console.log('crossorigin: ',process.env.frontend_BaseURL);
+  res.setHeader('Access-Control-Allow-Origin', process.env.frontend_BaseURL);
   res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   res.setHeader('Access-Control-Allow-Credentials', true);
   next();
 });
 
+// sessions handler
 app.use(session({
-  secret: 'angular auth passport secret shh',
+  store: new MongoStore({
+    mongooseConnection: mongoose.connection,
+    ttl: 24 * 60 * 60 // 1 day
+  }),
+  secret: 'some-string',
   resave: true,
   saveUninitialized: true,
-  cookie: { httpOnly: true, maxAge: 2419200000 },
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000
+  }
 }));
 
 // view engine setup
