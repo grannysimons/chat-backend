@@ -63,18 +63,19 @@ router.post('/signup', notLoggedIn(),function(req, res, next) {
   const email = req.body.email;
   const password = req.body.password;
 
-  console.log('1');
+  console.log('1 ', email,', ',password);
   if(!email || !password)
   {
-    console.log('2');
-    res.status(422).json({ error: 'validation' });
+    console.log('222222');
+    return res.status(422).json({ error: 'validation' });
+    console.log('222222 BIS');
   }
   User.findOne({ email })
   .then((user) => {
     if( user )
     {
       console.log('3');
-      res.status(422).json({ error: 'username-not-unique' });
+      return res.status(422).json({ error: 'username-not-unique' });
     }
     console.log('4');
     
