@@ -7,6 +7,6 @@ chatSchema = new Schema({
   user2: Schema.Types.ObjectId,
 });
 
-const Chat = mongoose.model('Chat', messageSchema);
+const Chat = mongoose.model('Chat', chatSchema);
 
 module.exports = Chat;

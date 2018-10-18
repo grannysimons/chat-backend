@@ -93,7 +93,7 @@ router.post('/signup', notLoggedIn(),function(req, res, next) {
       console.log('6');
 
       req.session.currentUser = newUser;
-      req.json(newUser);
+      return res.json(newUser);
     })
   })
 
@@ -102,7 +102,7 @@ router.post('/signup', notLoggedIn(),function(req, res, next) {
 router.post('/logout', loggedIn(), function(req, res, next) {
   console.log('logout');
   delete req.session.currentUser;
-  res.status(204).send();
+  return res.status(204).send();
 });
 
 router.get('/private', loggedIn(), function(req, res, next) {
