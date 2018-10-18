@@ -31,8 +31,16 @@ router.post('/:id', (req, res, next) => {
 
 });
 
-router.post('/new', (req, res, next) => {
-
+router.post('/newChat', (req, res, next) => {
+  Chat.findOne({email: req.body.email})
+  .then(chat => {
+    if(!chat)
+    {
+      const newChat = Chat({
+        
+      })
+    }
+  })
 });
 
 module.exports = router;
