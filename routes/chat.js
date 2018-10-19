@@ -3,9 +3,9 @@ var router = express.Router();
 const Chat = require('../models/chat');
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
+// router.get('/', function(req, res, next) {
+//   res.send('respond with a resource');
+// });
 
 router.get('/list', (req, res, next) => {
   console.log('list!');
@@ -23,23 +23,46 @@ router.get('/list', (req, res, next) => {
   })
 });
 
-router.get('/:id', (req, res, next) => {
+// router.get('/:id', (req, res, next) => {
 
-});
+// });
 
-router.post('/:id', (req, res, next) => {
+// router.post('/:id', (req, res, next) => {
 
-});
+// });
 
 router.post('/newChat', (req, res, next) => {
-  Chat.findOne({email: req.body.email})
+  console.log('newChat user1: ', req.session.currentUser.email);
+  console.log('newChat user2: ', req.body.email);
+  const filter = { 
+    $or: [
+      {$and: [{user1: req.session.currentUser.email}, {user2: req.body.email}]},
+      {$and: [{user1: req.body.email}, {user2: req.session.currentUser.mail}]}
+    ]
+  };
+  Chat.findOne(filter)
   .then(chat => {
     if(!chat)
     {
       const newChat = Chat({
-        
+        user1: req.session.currentUser.email,
+        user2: req.body.email
+      });
+      return newChat.save()
+      .then(() => {
+        return res.json(newChat);
+      })
+      .catch((error) => {
+        return res.json(error);
       })
     }
+    else
+    {
+      console.log("aquest xat ja existeix");
+    }
+  })
+  .catch(error => {
+    console.log('error: ',error);
   })
 });
 

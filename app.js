@@ -17,7 +17,6 @@ const app = express();
 
 
 app.use((req, res, next) => {
-  console.log('crossorigin: ',process.env.frontend_BaseURL);
   res.setHeader('Access-Control-Allow-Origin', process.env.frontend_BaseURL);
   res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
