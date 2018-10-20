@@ -6,7 +6,7 @@ messageSchema = new Schema({
   text: String,
   time: String,
   user: String,
-  idChat: String,
+  idChat: Schema.Types.ObjectId,
 });
 
 const Message = mongoose.model('Message', messageSchema);
