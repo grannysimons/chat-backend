@@ -3,10 +3,8 @@ const Schema = mongoose.Schema;
 
 chatSchema = new Schema({
   idChat: Schema.Types.ObjectId,
-  // user1: Schema.Types.ObjectId,
-  // user2: Schema.Types.ObjectId,
-  user1: String,
-  user2: String,
+  user1: String, //mail
+  user2: String,  //mail
 });
 
 const Chat = mongoose.model('Chat', chatSchema);

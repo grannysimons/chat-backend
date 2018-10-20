@@ -7,21 +7,21 @@ const Chat = require('../models/chat');
 //   res.send('respond with a resource');
 // });
 
-router.get('/list', (req, res, next) => {
-  console.log('list!');
-  if(!req.session.currentUser)
-  {
-    return res.status(443).json({message: 'not logged as a user'})
-  }
-  Chat.find({email: req.session.currentUser.email})
-  .then(chats => {
-    return res.status(200).json({ chats });
-  })
-  .catch(error => {
-    return res.json({missatge: error});
-    console.log('error: ', error);
-  })
-});
+// router.get('/list', (req, res, next) => {
+//   console.log('list!');
+//   if(!req.session.currentUser)
+//   {
+//     return res.status(443).json({message: 'not logged as a user'})
+//   }
+//   Chat.find({email: req.session.currentUser.email})
+//   .then(chats => {
+//     return res.status(200).json({ chats });
+//   })
+//   .catch(error => {
+//     return res.json({missatge: error});
+//     console.log('error: ', error);
+//   })
+// });
 
 // router.get('/:id', (req, res, next) => {
 
@@ -32,8 +32,6 @@ router.get('/list', (req, res, next) => {
 // });
 
 router.post('/newChat', (req, res, next) => {
-  console.log('newChat user1: ', req.session.currentUser.email);
-  console.log('newChat user2: ', req.body.email);
   const filter = { 
     $or: [
       {$and: [{user1: req.session.currentUser.email}, {user2: req.body.email}]},
@@ -65,6 +63,15 @@ router.post('/newChat', (req, res, next) => {
     console.log('error: ',error);
   })
 });
+
+router.post('/chatList', (req,res,next) => {
+  let userMail = req.session.currentUser.email;
+  Chat.find({ $or: [{ user1: userMail }, { user2: userMail }] })
+  .then(chats => {
+    console.log('chatList: ', chats);
+    return res.json({ chats })
+  })
+})
 
 module.exports = router;
 
