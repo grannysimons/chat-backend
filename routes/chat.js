@@ -1,6 +1,9 @@
 var express = require('express');
 var router = express.Router();
 const Chat = require('../models/chat');
+const User = require('../models/user');
+const mongoose = require('mongoose');
+
 
 /* GET users listing. */
 // router.get('/', function(req, res, next) {
@@ -48,37 +51,46 @@ dateChatFormat = ( date ) => {
 }
 
 router.post('/newChat', (req, res, next) => {
-  const filter = { 
-    $or: [
-      {$and: [{'user1.email': req.session.currentUser.email}, {'user2.email': req.body.email}]},
-      {$and: [{'user1.email': req.body.email}, {'user2.email': req.session.currentUser.mail}]}
-    ]
-  };
-  Chat.findOne(filter)
-  .then(chat => {
-    if(!chat)
+  User.findOne({ email: req.body.email })
+  .then(user => {
+    console.log('user!!! ', user);
+    if(user)
     {
-      const newChat = Chat({
-        user1: {
-          email: req.session.currentUser.email,
-          lastSeen: Date.now(),
-        },
-        user2: {
-          email: req.body.email,
-          lastSeen: Date.now(),
-        } 
-      });
-      return newChat.save()
-      .then(() => {
-        return res.json(newChat);
+      const filter = { 
+        $or: [
+          {$and: [{'user1.email': req.session.currentUser.email}, {'user2.email': req.body.email}]},
+          {$and: [{'user1.email': req.body.email}, {'user2.email': req.session.currentUser.mail}]}
+        ]
+      };
+      Chat.findOne(filter)
+      .then(chat => {
+        if(!chat)
+        {
+          const newChat = Chat({
+            user1: {
+              idUser: req.session.currentUser._id, 
+              email: req.session.currentUser.email,
+              lastSeen: Date.now(),
+            },
+            user2: {
+              idUser: user._id,
+              email: req.body.email,
+              lastSeen: Date.now(),
+            } 
+          });
+          return newChat.save()
+          .then(() => {
+            return res.json(newChat);
+          })
+          .catch((error) => {
+            return res.json(error);
+          })
+        }
+        else
+        {
+          console.log("aquest xat ja existeix");
+        }
       })
-      .catch((error) => {
-        return res.json(error);
-      })
-    }
-    else
-    {
-      console.log("aquest xat ja existeix");
     }
   })
   .catch(error => {

@@ -6,10 +6,18 @@ chatSchema = new Schema({
   // user1: String, //mail
   // user2: String,  //mail
   user1: {
+    idUser: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
     email: String,
     lastSeen: Number
   },
   user2: {
+    idUser: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
     email: String,
     lastSeen: Number
   }

@@ -44,6 +44,7 @@ router.post('/login', notLoggedIn(), function(req, res, next) {
     if(bcrypt.compareSync(password, user.password))
     {
       req.session.currentUser = user;
+      console.log('currentUser: ',req.session.currentUser);
       res.json(user);
     }
     else
