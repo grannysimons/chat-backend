@@ -34,8 +34,8 @@ const Chat = require('../models/chat');
 router.post('/newChat', (req, res, next) => {
   const filter = { 
     $or: [
-      {$and: [{user1: req.session.currentUser.email}, {user2: req.body.email}]},
-      {$and: [{user1: req.body.email}, {user2: req.session.currentUser.mail}]}
+      {$and: [{'user1.email': req.session.currentUser.email}, {'user2.email': req.body.email}]},
+      {$and: [{'user1.email': req.body.email}, {'user2.email': req.session.currentUser.mail}]}
     ]
   };
   Chat.findOne(filter)
@@ -43,8 +43,12 @@ router.post('/newChat', (req, res, next) => {
     if(!chat)
     {
       const newChat = Chat({
-        user1: req.session.currentUser.email,
-        user2: req.body.email
+        user1: {
+            email: req.session.currentUser.email,
+          },
+        user2: {
+          email: req.body.email,
+        } 
       });
       return newChat.save()
       .then(() => {
@@ -66,7 +70,7 @@ router.post('/newChat', (req, res, next) => {
 
 router.post('/chatList', (req,res,next) => {
   let userMail = req.session.currentUser.email;
-  Chat.find({ $or: [{ user1: userMail }, { user2: userMail }] })
+  Chat.find({ $or: [{ 'user1.email': userMail }, { 'user2.email': userMail }] })
   .then(chats => {
     console.log('chatList: ', chats);
     return res.json({ chats })
