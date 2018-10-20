@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 const Chat = require('../models/chat');
 const User = require('../models/user');
+const Message = require('../models/message');
 const mongoose = require('mongoose');
 
 
@@ -53,7 +54,6 @@ dateChatFormat = ( date ) => {
 router.post('/newChat', (req, res, next) => {
   User.findOne({ email: req.body.email })
   .then(user => {
-    console.log('user!!! ', user);
     if(user)
     {
       const filter = { 
@@ -101,9 +101,45 @@ router.post('/newChat', (req, res, next) => {
 router.post('/chatList', (req,res,next) => {
   let userMail = req.session.currentUser.email;
   Chat.find({ $or: [{ 'user1.email': userMail }, { 'user2.email': userMail }] })
+  .populate('user1.idUser')
+  .populate('user2.idUser')
   .then(chats => {
-    console.log('chatList: ', chats);
+    console.log('chatList: ', chats[0].user1);
+    chats.forEach((chat) => {
+      let filter = {
+        idChat: chat._id,
+      }
+      Message.find(filter)
+      .sort({time: -1})
+      .then(messages => {
+        console.log(messages[0]);
+      })
+    });
+
     return res.json({ chats })
+  })
+})
+
+router.post('/:idChat/send', (req,res,next) => {
+  let message = req.body.message;
+  let idChat = req.params.idChat;
+  const newMessage = Message({
+    text: message,
+    time: Date.now(),
+    user: req.session.currentUser,
+    idChat,
+  });
+  return newMessage.save()
+  .then(() => {
+    return res.json(newMessage);
+  })
+})
+
+router.post('/:idChat', (req,res,next) => {
+  let idChat = req.params.idChat;
+  Message.find({ idChat })
+  .then( chats => {
+    console.log('chats: ', chats);
   })
 })
 
