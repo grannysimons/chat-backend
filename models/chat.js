@@ -7,11 +7,11 @@ chatSchema = new Schema({
   // user2: String,  //mail
   user1: {
     email: String,
-    lastSeen: { Type: Date }
+    lastSeen: Number
   },
   user2: {
     email: String,
-    lastSeen: { Type: Date }
+    lastSeen: Number
   }
 });
 

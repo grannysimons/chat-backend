@@ -31,6 +31,22 @@ const Chat = require('../models/chat');
 
 // });
 
+dateChatFormat = ( date ) => {
+  var date = new Date();
+  var dd = date.getDate();
+  var mm = date.getMonth()+1; //January is 0!
+
+  var yyyy = date.getFullYear();
+  if(dd<10){
+      dd='0'+dd;
+  } 
+  if(mm<10){
+      mm='0'+mm;
+  } 
+  var today = dd+'/'+mm+'/'+yyyy;
+  return today;
+}
+
 router.post('/newChat', (req, res, next) => {
   const filter = { 
     $or: [
@@ -44,10 +60,12 @@ router.post('/newChat', (req, res, next) => {
     {
       const newChat = Chat({
         user1: {
-            email: req.session.currentUser.email,
-          },
+          email: req.session.currentUser.email,
+          lastSeen: Date.now(),
+        },
         user2: {
           email: req.body.email,
+          lastSeen: Date.now(),
         } 
       });
       return newChat.save()
