@@ -5,36 +5,6 @@ const User = require('../models/user');
 const Message = require('../models/message');
 const mongoose = require('mongoose');
 
-
-/* GET users listing. */
-// router.get('/', function(req, res, next) {
-//   res.send('respond with a resource');
-// });
-
-// router.get('/list', (req, res, next) => {
-//   console.log('list!');
-//   if(!req.session.currentUser)
-//   {
-//     return res.status(443).json({message: 'not logged as a user'})
-//   }
-//   Chat.find({email: req.session.currentUser.email})
-//   .then(chats => {
-//     return res.status(200).json({ chats });
-//   })
-//   .catch(error => {
-//     return res.json({missatge: error});
-//     console.log('error: ', error);
-//   })
-// });
-
-// router.get('/:id', (req, res, next) => {
-
-// });
-
-// router.post('/:id', (req, res, next) => {
-
-// });
-
 dateChatFormat = ( date ) => {
   var date = new Date();
   var dd = date.getDate();
@@ -104,7 +74,6 @@ router.post('/chatList', (req,res,next) => {
   .populate('user1.idUser')
   .populate('user2.idUser')
   .then(chats => {
-    console.log('chatList: ', chats[0].user1);
     chats.forEach((chat) => {
       let filter = {
         idChat: chat._id,
@@ -120,28 +89,55 @@ router.post('/chatList', (req,res,next) => {
   })
 })
 
-router.post('/:idChat/send', (req,res,next) => {
+router.post('/:email/send', (req,res,next) => {
   let message = req.body.message;
-  let idChat = req.params.idChat;
-  const newMessage = Message({
-    text: message,
-    time: Date.now(),
-    user: req.session.currentUser,
-    idChat,
-  });
-  return newMessage.save()
-  .then(() => {
-    return res.json(newMessage);
+  let email = req.params.email;
+  let filter = {
+    $or: [
+      {'user1.email': email, 'user2.email': req.session.currentUser.email},
+      {'user2.email': email, 'user1.email': req.session.currentUser.email},
+    ]
+  };
+  Chat.findOne(filter)
+  .then(chat => {
+    const newMessage = Message({
+      text: message,
+      time: new Date(),
+      user: req.session.currentUser,
+      idChat: chat._id,
+    });
+    return newMessage.save()
+    .then(() => {
+      return res.json(newMessage);
+    })
   })
 })
 
-router.post('/:idChat', (req,res,next) => {
-  let idChat = req.params.idChat;
-  Message.find({ idChat })
-  .then( chats => {
-    console.log('chats: ', chats);
+router.post('/:email', (req,res,next) => {
+  let email = req.params.email;
+  let filter = {
+    $or: [
+      {'user1.email': email, 'user2.email': req.session.currentUser.email},
+      {'user2.email': email, 'user1.email': req.session.currentUser.email},
+    ]
+  };
+  Chat.findOne(filter)
+  .then(chat => {
+    console.log('chats: ', chat);
+    Message.find({ idChat:  chat._id})
+    .then( messages => {
+      console.log(messages);
+      return res.json(messages);      
+    })
   })
 })
+
+
+// idMessage: Schema.Types.ObjectId,
+//   text: String,
+//   time: String,
+//   user: String,
+//   idChat: Schema.Types.ObjectId,
 
 module.exports = router;
 
