@@ -81,11 +81,14 @@ router.post('/chatList', (req,res,next) => {
       Message.find(filter)
       .sort({time: -1})
       .then(messages => {
-        console.log(messages[0]);
+        console.log(messages[0].time);
+        chat.lastMessage = new Date(messages[0].time);
+        // return res.json({ messages });
       })
     });
+    return res.json({ chats });
+    // console.log('chatList: ', chats);
 
-    return res.json({ chats })
   })
 })
 
@@ -124,20 +127,25 @@ router.post('/:email', (req,res,next) => {
   Chat.findOne(filter)
   .then(chat => {
     console.log('chats: ', chat);
+    let idInterlocutor = chat.user1.idUser == req.session.currentUser._id ? chat.user2.idUser : chat.user1.idUser;
+    console.log('user1.idUser: ', chat.user1.idUser);
+    console.log('user2.idUser: ', chat.user2.idUser);
+    console.log('req.session.currentUser._id: ', req.session.currentUser._id);
+    console.log('idInterlocutor: ', idInterlocutor);
+    User.findById(idInterlocutor)
+    .then(user => {
     Message.find({ idChat:  chat._id})
     .then( messages => {
-      console.log(messages);
-      return res.json(messages);      
+        // console.log('user: ', user);
+        // console.log('user.email: ', user.userName);
+        let xatObject = {messages, interlocutor: user.userName};
+        return res.json(xatObject);      
+        console.log('missatges: ', messages);
+      });
+      // return res.json(messages);      
     })
   })
 })
-
-
-// idMessage: Schema.Types.ObjectId,
-//   text: String,
-//   time: String,
-//   user: String,
-//   idChat: Schema.Types.ObjectId,
 
 module.exports = router;
 
