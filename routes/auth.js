@@ -101,4 +101,56 @@ router.get('/private', loggedIn(), function(req, res, next) {
   res.status(403).json({ message: 'unauthorized' })
 });
 
+router.post('/profile', loggedIn(), function(req, res, next) {
+  console.log('profile');
+  if(req.session.currentUser)
+  {
+    let userData = {
+      name: '',
+      email: '',
+      password: '',
+      quote: '',
+    }
+    User.findById( req.session.currentUser._id )
+    .then(user => {
+      userData.name = user.userName;
+      userData.email = user.email;
+      userData.password = '';
+      userData.quote = user.quote;
+      return res.json(userData);
+    })
+  }
+  else
+  {
+    return res.status(404).json({ error: 'not-logged' });
+  }
+});
+
+router.post('/profile/edit', loggedIn(), function(req, res, next) {
+  console.log('profile/edit');
+  const field = req.body.field; //object
+  const value = req.body.value; //string
+  console.log('currentUser: ', req.session.currentUser);
+  let updateData = {}
+  if(field.name) updateData.userName = value;
+  else if(field.email) updateData.email = value;
+  // else if(field.password) updateData.password = value;
+  else if(field.quote) updateData.quote = value;
+  User.findByIdAndUpdate(req.session.currentUser._id, updateData, { 'new': true})
+  .then(result => {
+    User.findById(result._id)
+    .then(( user ) => {
+      if(!user)
+      {
+        res.status(404).json({ error: 'not-found' });
+      }
+      req.session.currentUser = user;
+      console.log('currentUser: ',req.session.currentUser);
+      res.json(user);
+    })
+    console.log('result: ', result);
+    return res.json(result);
+  })
+});
+
 module.exports = router;

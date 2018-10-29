@@ -5,6 +5,8 @@ const User = require('../models/user');
 const Message = require('../models/message');
 const mongoose = require('mongoose');
 
+const SocketManager = require('../SocketManager');
+
 dateChatFormat = ( date ) => {
   var date = new Date();
   var dd = date.getDate();
@@ -111,6 +113,7 @@ router.post('/:email/send', (req,res,next) => {
     });
     return newMessage.save()
     .then(() => {
+      SocketManager.messageSent(req.session.currentUser, chat._id);
       return res.json(newMessage);
     })
   })
@@ -126,23 +129,27 @@ router.post('/:email', (req,res,next) => {
   };
   Chat.findOne(filter)
   .then(chat => {
-    console.log('chats: ', chat);
     let idInterlocutor = chat.user1.idUser == req.session.currentUser._id ? chat.user2.idUser : chat.user1.idUser;
-    console.log('user1.idUser: ', chat.user1.idUser);
-    console.log('user2.idUser: ', chat.user2.idUser);
-    console.log('req.session.currentUser._id: ', req.session.currentUser._id);
-    console.log('idInterlocutor: ', idInterlocutor);
     User.findById(idInterlocutor)
     .then(user => {
-    Message.find({ idChat:  chat._id})
-    .then( messages => {
-        // console.log('user: ', user);
-        // console.log('user.email: ', user.userName);
-        let xatObject = {messages, interlocutor: user.userName};
-        return res.json(xatObject);      
-        console.log('missatges: ', messages);
-      });
-      // return res.json(messages);      
+      Message.find({ idChat:  chat._id})
+      .then( messages => {
+          let filter = {};
+          if(chat.user1.idUser == req.session.currentUser._id)
+          {
+            filter = { user1: { lastSeen: Date.now() }}
+          } 
+          else
+          {
+            filter = { user2: { lastSeen: Date.now() }}
+          } 
+          Chat.findByIdAndUpdate(chat.idChat, filter)
+          .then(chats => {
+            console.log('chats: ', chats);
+            let xatObject = {messages, interlocutor: user};
+            return res.json(xatObject);
+          })
+        });
     })
   })
 })

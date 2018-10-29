@@ -7,7 +7,7 @@ userSchema = new Schema({
   email: String,
   password: String,
   imageURL: String,
-  frase: String,
+  quote: String,
 });
 
 const User = mongoose.model('User', userSchema);
