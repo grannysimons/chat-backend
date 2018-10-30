@@ -5,7 +5,7 @@ const User = require('../models/user');
 const Message = require('../models/message');
 const mongoose = require('mongoose');
 
-const SocketManager = require('../SocketManager');
+// const SocketManager = require('../SocketManager');
 
 dateChatFormat = ( date ) => {
   var date = new Date();
@@ -52,6 +52,7 @@ router.post('/newChat', (req, res, next) => {
           });
           return newChat.save()
           .then(() => {
+            // SocketManager.newChat(newChat._id);
             return res.json(newChat);
           })
           .catch((error) => {
@@ -60,13 +61,13 @@ router.post('/newChat', (req, res, next) => {
         }
         else
         {
-          console.log("aquest xat ja existeix");
+          // console.log("aquest xat ja existeix");
         }
       })
     }
   })
   .catch(error => {
-    console.log('error: ',error);
+    // console.log('error: ',error);
   })
 });
 
@@ -83,8 +84,8 @@ router.post('/chatList', (req,res,next) => {
       Message.find(filter)
       .sort({time: -1})
       .then(messages => {
-        console.log(messages[0].time);
-        chat.lastMessage = new Date(messages[0].time);
+        // console.log(messages[0].time);
+        // chat.lastMessage = new Date(messages[0].time);
         // return res.json({ messages });
       })
     });
@@ -113,14 +114,16 @@ router.post('/:email/send', (req,res,next) => {
     });
     return newMessage.save()
     .then(() => {
-      SocketManager.messageSent(req.session.currentUser, chat._id);
+      // SocketManager.messageSent(newMessage);
       return res.json(newMessage);
     })
   })
 })
 
 router.post('/:email', (req,res,next) => {
+  // console.log('/email');
   let email = req.params.email;
+  // let idChat = req.params.idChat
   let filter = {
     $or: [
       {'user1.email': email, 'user2.email': req.session.currentUser.email},
@@ -145,8 +148,9 @@ router.post('/:email', (req,res,next) => {
           } 
           Chat.findByIdAndUpdate(chat.idChat, filter)
           .then(chats => {
-            console.log('chats: ', chats);
+            // console.log('chats: ', chats);
             let xatObject = {messages, interlocutor: user};
+            // SocketManager.newChat(chat._id);
             return res.json(xatObject);
           })
         });

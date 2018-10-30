@@ -25,10 +25,9 @@ var server = http.createServer(app);
 /**
  * Initializing SOCKET.IO in the server
  */
-var io = module.exports.io = require('socket.io')(server);
-const SocketManager = require('../SocketManager');
-io.on('connection', SocketManager.socketConnected);
-// const PORT_SOCKET = process.env.PORT_SOCKET || 3231;
+// var io = module.exports.io = require('socket.io')(server);
+// const SocketManager = require('../SocketManager');
+// io.on('connection', SocketManager.socketConnected);
 server.listen(port, () => {
   console.log('Connected to port: ', port);
 });

@@ -8,7 +8,7 @@ const { loggedIn } = require('../helpers/is-logged');
 const { notLoggedIn } = require('../helpers/is-not-logged');
 
 router.get('/me', function(req, res, next) {
-  console.log('me');
+  // console.log('me');
   if(req.session.currentUser)
   {
     res.json(req.session.currentUser);
@@ -20,7 +20,7 @@ router.get('/me', function(req, res, next) {
 });
 
 router.post('/login', notLoggedIn(), function(req, res, next) {
-  console.log('login: ',req.body);
+  // console.log('login: ',req.body);
   if(req.session.currentUser)
   {
     res.status(401).json({ error: 'unauthorized' });
@@ -28,8 +28,8 @@ router.post('/login', notLoggedIn(), function(req, res, next) {
   const email = req.body.email;
   const password = req.body.password;
 
-  console.log('email: ', email);
-  console.log('password: ', password);
+  // console.log('email: ', email);
+  // console.log('password: ', password);
 
   if(!email || !password)
   {
@@ -44,7 +44,7 @@ router.post('/login', notLoggedIn(), function(req, res, next) {
     if(bcrypt.compareSync(password, user.password))
     {
       req.session.currentUser = user;
-      console.log('currentUser: ',req.session.currentUser);
+      // console.log('currentUser: ',req.session.currentUser);
       res.json(user);
     }
     else
@@ -87,13 +87,13 @@ router.post('/signup', notLoggedIn(),function(req, res, next) {
 });
 
 router.post('/logout', loggedIn(), function(req, res, next) {
-  console.log('logout');
+  // console.log('logout');
   delete req.session.currentUser;
   return res.status(204).send();
 });
 
 router.get('/private', loggedIn(), function(req, res, next) {
-  console.log('private');
+  // console.log('private');
   if(req.session.currentUser)
   {
     res.status(200).json({ message: 'private message' });
@@ -102,7 +102,7 @@ router.get('/private', loggedIn(), function(req, res, next) {
 });
 
 router.post('/profile', loggedIn(), function(req, res, next) {
-  console.log('profile');
+  // console.log('profile');
   if(req.session.currentUser)
   {
     let userData = {
@@ -127,10 +127,10 @@ router.post('/profile', loggedIn(), function(req, res, next) {
 });
 
 router.post('/profile/edit', loggedIn(), function(req, res, next) {
-  console.log('profile/edit');
+  // console.log('profile/edit');
   const field = req.body.field; //object
   const value = req.body.value; //string
-  console.log('currentUser: ', req.session.currentUser);
+  // console.log('currentUser: ', req.session.currentUser);
   let updateData = {}
   if(field.name) updateData.userName = value;
   else if(field.email) updateData.email = value;
@@ -145,10 +145,10 @@ router.post('/profile/edit', loggedIn(), function(req, res, next) {
         res.status(404).json({ error: 'not-found' });
       }
       req.session.currentUser = user;
-      console.log('currentUser: ',req.session.currentUser);
+      // console.log('currentUser: ',req.session.currentUser);
       res.json(user);
     })
-    console.log('result: ', result);
+    // console.log('result: ', result);
     return res.json(result);
   })
 });
