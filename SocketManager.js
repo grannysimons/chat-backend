@@ -1,10 +1,7 @@
-const { NEW_CHAT, NEW_USER } = require('./events');
+const { NEW_CHAT, NEW_USER, MESSAGE_RECEIVED } = require('./events');
 
 class SocketManager {
   constructor(){
-    console.log('constructor SocketManager');
-    // this.io=io;
-    // this.socket = this.io.of('/5bcf31b8f54f1068ca7fb3f7');
   }
   initIO(io){
     this.io=io;
@@ -28,32 +25,28 @@ class SocketManager {
     })
   }
   newChat({ from, to , chat}){
-    console.log('newChat!!!');
-    let socket = this.connectToNamespace(to);
-    socket.emit(NEW_CHAT, chat);
-    socket.on('disconnection', function(){
+    this.connectToNamespace(to);
+    this.socket.emit(NEW_CHAT, chat);
+    this.socket.on('disconnection', function(){
       console.log('desconnectat');
     })
   }
   newUser(userId){
-    console.log('newUser. userId: ', userId);
-
     this.connectToNamespace(userId);
-
-
-    // this.mailSockets[userId] = this.io.to('/',userId);
-    // this.mailSockets[userId].emit('NEW_USER', message);
   }
-
+  messageReceived(message, toUserId){
+    console.log('message received!!! ', toUserId);
+    this.connectToNamespace(toUserId);
+    this.socket.emit(MESSAGE_RECEIVED);
+    // console.log('messageSent');
+    // this.io.to(this.chatId).emit('MESSAGE_SENT', message);
+  }
   connectToNamespace (nsp){
     console.log('connectToNamespace: ',nsp);
     this.socket = this.io.of('/'+nsp);
     this.socket.on('connection', (sk) => {
-      console.log('connection ok');
-      sk.emit(NEW_USER, 'new user de prova');  //de prova
-      this.socket.emit(NEW_CHAT, 'new chat de prova'); //de prova
+      // console.log('connection ok ');
     });
-    // return socket;
     return;
   }
   userConnected (){
@@ -69,10 +62,7 @@ class SocketManager {
 
   }
   
-  messageSent(message){
-    // console.log('messageSent');
-    // this.io.to(this.chatId).emit('MESSAGE_SENT', message);
-  }
+  
   socketConnected(socket){
     this.socket = socket;
   }

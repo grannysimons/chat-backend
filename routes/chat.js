@@ -73,34 +73,14 @@ router.post('/newChat', (req, res, next) => {
 });
 
 router.post('/chatList', (req,res,next) => {
-  console.log('chatlist.......');
   let userMail = req.session.currentUser.email;
   Chat.find({ $or: [{ 'user1.email': userMail }, { 'user2.email': userMail }] })
   .populate('user1.idUser')
   .populate('user2.idUser')
   .sort({dateLastMessage: -1})
   .then(chats => {
-    console.log('1');
-    chats.forEach(chat => {
-      console.log(chat);
-    })
-    // chats.forEach((chat) => {
-    //   let filter = {
-    //     idChat: chat._id,
-    //   }
-    //   Message.find(filter)
-    //   .sort({time: -1})
-    //   .then(messages => {
-    //     console.log('2');
-    //     return res.json({ messages });
-    //   })
-    // });
-    console.log('3');
-    console.log('socketManager!!!!!');
     SocketManager.newUser(req.session.currentUser._id);
     return res.json({ chats });
-    // console.log('chatList: ', chats);
-
   })
   .catch(error =>{
     console.log(error)
@@ -110,7 +90,7 @@ router.post('/chatList', (req,res,next) => {
 
 router.post('/:email/send', (req,res,next) => {
   let message = req.body.message;
-  let email = req.params.email;
+  let email = req.params.email; //destinatari
   let filter = {
     $or: [
       {'user1.email': email, 'user2.email': req.session.currentUser.email},
@@ -122,14 +102,19 @@ router.post('/:email/send', (req,res,next) => {
     const newMessage = Message({
       text: message,
       time: new Date(),
-      user: req.session.currentUser,
+      user: req.session.currentUser,  //origen
       idChat: chat._id,
     });
     return newMessage.save()
     .then(() => {
-      // SocketManager.messageSent(newMessage);
       Chat.findByIdAndUpdate(chat._id, {dateLastMessage: Date.now()})
       .then(chat => {
+        const toUserId = chat.user1.idUser == req.session.currentUser._id ? chat.user2.idUser : chat.user1.idUser;
+        console.log('toUserId ', toUserId);
+        console.log('chat.user1.idUser ', chat.user1.idUser);
+        console.log('chat.user2.idUser ', chat.user2.idUser);
+        console.log('req.session.currentUser.idUser ', req.session.currentUser._id);
+        SocketManager.messageReceived(newMessage.text, toUserId);
         return res.json(newMessage);
       })
     })
@@ -164,9 +149,7 @@ router.post('/:email', (req,res,next) => {
           } 
           Chat.findByIdAndUpdate(chat.idChat, filter)
           .then(chats => {
-            // console.log('chats: ', chats);
             let xatObject = {messages, interlocutor: user};
-            // SocketManager.newChat(chat._id);
             return res.json(xatObject);
           })
         });

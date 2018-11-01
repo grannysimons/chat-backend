@@ -3,7 +3,6 @@
 /**
  * Module dependencies.
  */
-console.log('passo pel www!!!');
 var app = require('../app');
 var debug = require('debug')('projecte-backend:server');
 var http = require('http');
