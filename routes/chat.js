@@ -78,7 +78,7 @@ router.post('/chatList', (req,res,next) => {
   Chat.find({ $or: [{ 'user1.email': userMail }, { 'user2.email': userMail }] })
   .populate('user1.idUser')
   .populate('user2.idUser')
-  .sort({dateLastMessage: 1})
+  .sort({dateLastMessage: -1})
   .then(chats => {
     console.log('1');
     chats.forEach(chat => {
