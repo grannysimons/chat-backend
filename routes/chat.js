@@ -39,6 +39,7 @@ router.post('/newChat', (req, res, next) => {
         if(!chat)
         {
           const newChat = Chat({
+            dateLastMessage: Date.now(),
             user1: {
               idUser: req.session.currentUser._id, 
               email: req.session.currentUser.email,
@@ -77,23 +78,23 @@ router.post('/chatList', (req,res,next) => {
   Chat.find({ $or: [{ 'user1.email': userMail }, { 'user2.email': userMail }] })
   .populate('user1.idUser')
   .populate('user2.idUser')
+  .sort({dateLastMessage: 1})
   .then(chats => {
     console.log('1');
-    chats.forEach((chat) => {
-      let filter = {
-        idChat: chat._id,
-      }
-      Message.find(filter)
-      .sort({time: -1})
-      .then(messages => {
-        console.log('2');
-
-        // console.log(messages[0].time);
-        // chat.lastMessage = new Date(messages[0].time);
-        
-        return res.json({ messages });
-      })
-    });
+    chats.forEach(chat => {
+      console.log(chat);
+    })
+    // chats.forEach((chat) => {
+    //   let filter = {
+    //     idChat: chat._id,
+    //   }
+    //   Message.find(filter)
+    //   .sort({time: -1})
+    //   .then(messages => {
+    //     console.log('2');
+    //     return res.json({ messages });
+    //   })
+    // });
     console.log('3');
     console.log('socketManager!!!!!');
     SocketManager.newUser(req.session.currentUser._id);
@@ -101,6 +102,10 @@ router.post('/chatList', (req,res,next) => {
     // console.log('chatList: ', chats);
 
   })
+  .catch(error =>{
+    console.log(error)
+    return res.json({ error });
+  });
 })
 
 router.post('/:email/send', (req,res,next) => {
@@ -123,7 +128,10 @@ router.post('/:email/send', (req,res,next) => {
     return newMessage.save()
     .then(() => {
       // SocketManager.messageSent(newMessage);
-      return res.json(newMessage);
+      Chat.findByIdAndUpdate(chat._id, {dateLastMessage: Date.now()})
+      .then(chat => {
+        return res.json(newMessage);
+      })
     })
   })
 })
