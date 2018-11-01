@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-
+console.log('passo pel www!!!');
 var app = require('../app');
 var debug = require('debug')('projecte-backend:server');
 var http = require('http');
@@ -25,8 +25,12 @@ var server = http.createServer(app);
 /**
  * Initializing SOCKET.IO in the server
  */
-// var io = module.exports.io = require('socket.io')(server);
-// const SocketManager = require('../SocketManager');
+const io = require('socket.io')(server);
+const SocketManager = require('../SocketManager');
+SocketManager.initIO(io);
+// SocketManager.testMethod();
+
+
 // io.on('connection', SocketManager.socketConnected);
 server.listen(port, () => {
   console.log('Connected to port: ', port);

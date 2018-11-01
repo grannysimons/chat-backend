@@ -7,6 +7,9 @@ const User = require('../models/user');
 const { loggedIn } = require('../helpers/is-logged');
 const { notLoggedIn } = require('../helpers/is-not-logged');
 
+const SocketManager = require('../SocketManager');
+// io.on('connection', SocketManager.socketConnected);
+
 router.get('/me', function(req, res, next) {
   // console.log('me');
   if(req.session.currentUser)
@@ -57,6 +60,8 @@ router.post('/login', notLoggedIn(), function(req, res, next) {
 
 router.post('/signup', notLoggedIn(),function(req, res, next) {
   console.log('signup');
+  // const io = require('../bin/www').io;
+
   const email = req.body.email;
   const password = req.body.password;
 
@@ -78,7 +83,12 @@ router.post('/signup', notLoggedIn(),function(req, res, next) {
     });
     return newUser.save()
     .then(() => {
-
+      SocketManager
+      // let socketUser = io.of('/',email);
+      // mailSockets[email] = socketUser;
+      // socketUser.on('connection', (socket) => {
+      //   console.log('connectat servidor amb usuari ', email);
+      // });
       req.session.currentUser = newUser;
       return res.json(newUser);
     })

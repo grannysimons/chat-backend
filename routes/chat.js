@@ -5,7 +5,7 @@ const User = require('../models/user');
 const Message = require('../models/message');
 const mongoose = require('mongoose');
 
-// const SocketManager = require('../SocketManager');
+const SocketManager = require('../SocketManager');
 
 dateChatFormat = ( date ) => {
   var date = new Date();
@@ -52,7 +52,7 @@ router.post('/newChat', (req, res, next) => {
           });
           return newChat.save()
           .then(() => {
-            // SocketManager.newChat(newChat._id);
+            SocketManager.newChat({from: req.session.currentUser._id, to: user._id, chat});
             return res.json(newChat);
           })
           .catch((error) => {
@@ -72,11 +72,13 @@ router.post('/newChat', (req, res, next) => {
 });
 
 router.post('/chatList', (req,res,next) => {
+  console.log('chatlist.......');
   let userMail = req.session.currentUser.email;
   Chat.find({ $or: [{ 'user1.email': userMail }, { 'user2.email': userMail }] })
   .populate('user1.idUser')
   .populate('user2.idUser')
   .then(chats => {
+    console.log('1');
     chats.forEach((chat) => {
       let filter = {
         idChat: chat._id,
@@ -84,11 +86,17 @@ router.post('/chatList', (req,res,next) => {
       Message.find(filter)
       .sort({time: -1})
       .then(messages => {
+        console.log('2');
+
         // console.log(messages[0].time);
         // chat.lastMessage = new Date(messages[0].time);
-        // return res.json({ messages });
+        
+        return res.json({ messages });
       })
     });
+    console.log('3');
+    console.log('socketManager!!!!!');
+    SocketManager.newUser(req.session.currentUser._id);
     return res.json({ chats });
     // console.log('chatList: ', chats);
 
