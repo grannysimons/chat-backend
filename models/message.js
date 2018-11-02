@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 messageSchema = new Schema({
   idMessage: Schema.Types.ObjectId,
   text: String,
-  time: String,
+  time: Number,
   user: String,
   idChat: Schema.Types.ObjectId,
 });

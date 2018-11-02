@@ -34,18 +34,13 @@ class SocketManager {
   newUser(userId){
     this.connectToNamespace(userId);
   }
-  messageReceived(message, toUserId){
-    console.log('message received!!! ', toUserId);
+  messageReceived(message, toUserId, fromUserMail){
     this.connectToNamespace(toUserId);
-    this.socket.emit(MESSAGE_RECEIVED);
-    // console.log('messageSent');
-    // this.io.to(this.chatId).emit('MESSAGE_SENT', message);
+    this.socket.emit(MESSAGE_RECEIVED, fromUserMail);
   }
   connectToNamespace (nsp){
-    console.log('connectToNamespace: ',nsp);
     this.socket = this.io.of('/'+nsp);
     this.socket.on('connection', (sk) => {
-      // console.log('connection ok ');
     });
     return;
   }

@@ -80,6 +80,21 @@ router.post('/chatList', (req,res,next) => {
   .sort({dateLastMessage: -1})
   .then(chats => {
     SocketManager.newUser(req.session.currentUser._id);
+
+    // chats.forEach(chat => {
+    //   const idUser = req.session.currentUser._id;
+    //   idChat = chat._id;
+    //   Chat.findById(idChat)
+    //   .then(chat => {
+    //     const lastSeenUser = chat.user1.idUser === idUser ? chat.user1.lastSeen : chat.user2.lastSeen;
+    //     Message.find({ time: {$gt: lastSeenUser}})
+    //     .then(messages => {
+    //       let numberOfNewMessages = messages.length;
+    //       chat.num = numberOfNewMessages;
+    //     })
+    //   })
+    // });
+    // console.log('chats: ', chats);
     return res.json({ chats });
   })
   .catch(error =>{
@@ -109,12 +124,9 @@ router.post('/:email/send', (req,res,next) => {
     .then(() => {
       Chat.findByIdAndUpdate(chat._id, {dateLastMessage: Date.now()})
       .then(chat => {
-        const toUserId = chat.user1.idUser == req.session.currentUser._id ? chat.user2.idUser : chat.user1.idUser;
-        console.log('toUserId ', toUserId);
-        console.log('chat.user1.idUser ', chat.user1.idUser);
-        console.log('chat.user2.idUser ', chat.user2.idUser);
-        console.log('req.session.currentUser.idUser ', req.session.currentUser._id);
-        SocketManager.messageReceived(newMessage.text, toUserId);
+        const toUserid = chat.user1.idUser == req.session.currentUser._id ? chat.user2.idUser : chat.user1.idUser;
+        const fromUserMail = chat.user1.idUser == req.session.currentUser._id ? chat.user1.email : chat.user2.email;
+        SocketManager.messageReceived(newMessage.text, toUserid, fromUserMail);
         return res.json(newMessage);
       })
     })
@@ -122,9 +134,7 @@ router.post('/:email/send', (req,res,next) => {
 })
 
 router.post('/:email', (req,res,next) => {
-  // console.log('/email');
   let email = req.params.email;
-  // let idChat = req.params.idChat
   let filter = {
     $or: [
       {'user1.email': email, 'user2.email': req.session.currentUser.email},
@@ -156,6 +166,21 @@ router.post('/:email', (req,res,next) => {
     })
   })
 })
+
+router.post('/:idUser/:idChat/totalNewMessages', (req, res, next)=>{
+  const { idUser , idChat } = req.params;
+  Chat.findById(idChat)
+  .then(chat => {
+    const lastSeenUser = chat.user1.idUser === idUser ? chat.user1.lastSeen : chat.user2.lastSeen;
+    Message.find({ time: {$gt: lastSeenUser}})
+    .then(messages => {
+      let numberOfNewMessages = messages.length;
+      console.log('number of new messages: ', numberOfNewMessages);
+      return res.json({totalNewMessages: numberOfNewMessages});
+    })
+  })
+  .catch(error => next(error));
+});
 
 module.exports = router;
 
