@@ -1,4 +1,4 @@
-const { NEW_CHAT, NEW_USER, MESSAGE_RECEIVED } = require('./events');
+const { NEW_CHAT, NEW_USER, MESSAGE_RECEIVED, TYPING, STOPPED_TYPING} = require('./events');
 
 class SocketManager {
   constructor(){
@@ -39,9 +39,18 @@ class SocketManager {
     this.socket.emit(MESSAGE_RECEIVED, fromUserMail);
   }
   connectToNamespace (nsp){
+    console.log('connectToNamespace', nsp);
     this.socket = this.io.of('/'+nsp);
     this.socket.on('connection', (sk) => {
+      console.log('connectat!!!');
     });
+    this.socket.on(TYPING, (msg) => {
+      console.log('user typing! msg: ', msg);
+    });
+    this.socket.on(STOPPED_TYPING, (sk) => {
+      console.log('user stopped typing!');
+    });
+   
     return;
   }
   userConnected (){
@@ -50,8 +59,11 @@ class SocketManager {
   userDisconnected(){
 
   }
-  userTyping(){
-
+  userTyping(userId){
+    this.connectTotNamespace(userId);
+    this.socket.on('broadcast', (message) => {
+      console.log('broadcast event: ',message);
+    })
   }
   userStoppedTyping(){
 

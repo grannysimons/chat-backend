@@ -23,6 +23,25 @@ dateChatFormat = ( date ) => {
   return today;
 }
 
+router.post('/getUser/:email', (req,res,next) => {
+  let email = req.params.email;
+  User.findOne({ email })
+  .then(user => {
+    return res.json( user );
+  })
+})
+
+router.post('/delete/:idUser', (req,res,next) => {
+  let idUser = req.params.idUser;
+  User.findByIdAndDelete(idUser)
+  .then(user => {
+    return res.json({ delete: "ok" });
+  })
+  .catch(error => {
+    return res.json({ error });
+  })
+})
+
 router.post('/newChat', (req, res, next) => {
   User.findOne({ email: req.body.email })
   .then(user => {
