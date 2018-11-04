@@ -27,6 +27,7 @@ var server = http.createServer(app);
 const io = require('socket.io')(server);
 const SocketManager = require('../SocketManager');
 SocketManager.initIO(io);
+// SocketManager.initIOFileReception();
 // SocketManager.testMethod();
 
 

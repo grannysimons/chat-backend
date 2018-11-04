@@ -6,6 +6,24 @@ const Message = require('../models/message');
 const mongoose = require('mongoose');
 
 const SocketManager = require('../SocketManager');
+const multer  = require('multer');
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    // console.log('destination!!');
+    cb(null, 'public/audios/');
+  },
+  filename: function (req, file, cb) {
+    // console.log('storage: file - ', file);
+    let extension = '.wav';
+    // if(file.mimetype === 'audio/mpeg-3' || file.mimetype === 'audio/mpeg') extension = '.mp3';
+    if(file.mimetype === 'audio/mpeg-3') extension = '.mp3';
+
+    cb(null, file.originalname + extension);
+  }
+})
+const upload = multer({ storage });
+
 
 dateChatFormat = ( date ) => {
   var date = new Date();
@@ -22,6 +40,11 @@ dateChatFormat = ( date ) => {
   var today = dd+'/'+mm+'/'+yyyy;
   return today;
 }
+
+router.post('/sendAudio', upload.single('audioFile'), (req, res, next) => {
+  console.log('sendAudio: ', req.file);
+  return res.json({ 'response': 'ok' });
+});
 
 router.post('/getUser/:email', (req,res,next) => {
   let email = req.params.email;
@@ -122,7 +145,44 @@ router.post('/chatList', (req,res,next) => {
   });
 })
 
-router.post('/:email/send', (req,res,next) => {
+router.post('/typing/:email', (req, res, next) => {
+  let email = req.params.email;
+  // let userId = req.session.currentUser._id;
+  let filter = { $or: [
+    {'user1.email': email},
+    {'user2.email': email},
+  ]};
+  Chat.findOne(filter)
+  .then(chat => {
+    let idChat = chat._id;
+    let idUserDest = chat.user1.email === email ? chat.user1.idUser : chat.user2.idUser;
+    SocketManager.typing(idUserDest, idChat);
+    return res.json({ result: 'ok' });
+  })
+  .catch(error => {
+    console.log('SocketManager error: ', error);
+  })
+})
+
+router.post('/stoppedTyping/:email', (req, res, next) => {
+  let email = req.params.email;
+  let filter = { $or: [
+    {'user1.email': email},
+    {'user2.email': email},
+  ]};
+  Chat.findOne(filter)
+  .then(chat => {
+    let idChat = chat._id;
+    let idUserDest = chat.user1.email === email ? chat.user1.idUser : chat.user2.idUser;
+    SocketManager.stoppedTyping(idUserDest, idChat);
+    return res.json({ result: 'ok' });
+  })
+  .catch(error => {
+    console.log('SocketManager error: ', error);
+  })
+})
+
+router.post('/:email/send', upload.single('audioMessage'), (req,res,next) => {
   let message = req.body.message;
   let email = req.params.email; //destinatari
   let filter = {

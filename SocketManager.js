@@ -1,4 +1,5 @@
 const { NEW_CHAT, NEW_USER, MESSAGE_RECEIVED, TYPING, STOPPED_TYPING} = require('./events');
+const SocketIOFile = require('socket.io-file');
 
 class SocketManager {
   constructor(){
@@ -38,6 +39,14 @@ class SocketManager {
     this.connectToNamespace(toUserId);
     this.socket.emit(MESSAGE_RECEIVED, fromUserMail);
   }
+  typing(destUserId, idChat){
+    this.connectToNamespace(destUserId);
+    this.socket.emit(TYPING, idChat);
+  }
+  stoppedTyping(destUserId, idChat){
+    this.connectToNamespace(destUserId);
+    this.socket.emit(STOPPED_TYPING, idChat);
+  }
   connectToNamespace (nsp){
     console.log('connectToNamespace', nsp);
     this.socket = this.io.of('/'+nsp);
@@ -68,49 +77,9 @@ class SocketManager {
   userStoppedTyping(){
 
   }
-  
-  
   socketConnected(socket){
     this.socket = socket;
   }
-  signUp(email){
-    // let event = `/${email}`
-    // this.io.on(event, () => {
-    //   console.log("signup. Email: ", email);
-    // });
-  }
-  
 }
 
 module.exports = new SocketManager();
-
-
-
-
-// // module.exports = {
-// //   socketConnected : (socket) => {
-// //     const io = require('./bin/www').io;
-// //     console.log('Socket id: ', socket.id);
-// //     io.emit('TYPING','an event sent to all connected clients');
-// //     io.emit('BU','BU event sent to all connected clients');
-  
-  
-// //     socket.on('TYPING', ()=>{
-// //       console.log("algú ha clicat el botó!!!");
-// //     })
-// //     socket.on('HOLA', ()=>{
-// //       console.log("rebut event HOLA de client a servidor!!");
-// //     });
-// //   },
-// //   messageSent : (message) => {
-// //     const io = require('./bin/www').io;
-// //     io.emit('MESSAGE_SENT',message);
-  
-// //     // socket.on('TYPING', ()=>{
-// //     //   console.log("algú ha clicat el botó!!!");
-// //     // })
-// //     // socket.on('HOLA', ()=>{
-// //     //   console.log("rebut event HOLA de client a servidor!!");
-// //     // });
-// //   }
-// // }
