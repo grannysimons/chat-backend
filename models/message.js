@@ -7,6 +7,7 @@ messageSchema = new Schema({
   time: Number,
   user: String,
   idChat: Schema.Types.ObjectId,
+  isAudio: Boolean,
 });
 
 const Message = mongoose.model('Message', messageSchema);

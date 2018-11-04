@@ -182,9 +182,10 @@ router.post('/stoppedTyping/:email', (req, res, next) => {
   })
 })
 
-router.post('/:email/send', upload.single('audioMessage'), (req,res,next) => {
+router.post('/:email/send', (req,res,next) => {
   let message = req.body.message;
   let email = req.params.email; //destinatari
+  let isAudio = req.body.isAudio;
   let filter = {
     $or: [
       {'user1.email': email, 'user2.email': req.session.currentUser.email},
@@ -198,6 +199,7 @@ router.post('/:email/send', upload.single('audioMessage'), (req,res,next) => {
       time: new Date(),
       user: req.session.currentUser,  //origen
       idChat: chat._id,
+      isAudio ,
     });
     return newMessage.save()
     .then(() => {
