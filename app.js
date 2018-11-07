@@ -1,3 +1,4 @@
+require('dotenv').config();
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
@@ -10,11 +11,9 @@ const MongoStore = require("connect-mongo")(session);
 const authRouter = require('./routes/auth');
 const chatRouter = require('./routes/chat');
 
-require('dotenv').config();
 const mongoose = require('./database');
 
 const app = express();
-
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', process.env.frontend_BaseURL);
