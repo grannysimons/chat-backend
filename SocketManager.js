@@ -1,5 +1,4 @@
 const { NEW_CHAT, NEW_USER, MESSAGE_RECEIVED, TYPING, STOPPED_TYPING} = require('./events');
-const SocketIOFile = require('socket.io-file');
 
 class SocketManager {
   constructor(){
