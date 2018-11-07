@@ -11,7 +11,6 @@ const SocketManager = require('../SocketManager');
 // io.on('connection', SocketManager.socketConnected);
 
 router.get('/me', function(req, res, next) {
-  // console.log('me');
   if(req.session.currentUser)
   {
     res.json(req.session.currentUser);
@@ -23,16 +22,12 @@ router.get('/me', function(req, res, next) {
 });
 
 router.post('/login', notLoggedIn(), function(req, res, next) {
-  // console.log('login: ',req.body);
   if(req.session.currentUser)
   {
     res.status(401).json({ error: 'unauthorized' });
   }
   const email = req.body.email;
   const password = req.body.password;
-
-  // console.log('email: ', email);
-  // console.log('password: ', password);
 
   if(!email || !password)
   {
@@ -47,7 +42,7 @@ router.post('/login', notLoggedIn(), function(req, res, next) {
     if(bcrypt.compareSync(password, user.password))
     {
       req.session.currentUser = user;
-      // console.log('currentUser: ',req.session.currentUser);
+      console.log('currentUser: ',req.session.currentUser);
       res.json(user);
     }
     else
@@ -59,9 +54,6 @@ router.post('/login', notLoggedIn(), function(req, res, next) {
 });
 
 router.post('/signup', notLoggedIn(),function(req, res, next) {
-  console.log('signup');
-  // const io = require('../bin/www').io;
-
   const email = req.body.email;
   const password = req.body.password;
 
@@ -83,13 +75,8 @@ router.post('/signup', notLoggedIn(),function(req, res, next) {
     });
     return newUser.save()
     .then(() => {
-      SocketManager
-      // let socketUser = io.of('/',email);
-      // mailSockets[email] = socketUser;
-      // socketUser.on('connection', (socket) => {
-      //   console.log('connectat servidor amb usuari ', email);
-      // });
       req.session.currentUser = newUser;
+      console.log('signup - newUser: ', newUser);
       return res.json(newUser);
     })
   })
@@ -97,13 +84,11 @@ router.post('/signup', notLoggedIn(),function(req, res, next) {
 });
 
 router.post('/logout', loggedIn(), function(req, res, next) {
-  // console.log('logout');
   delete req.session.currentUser;
   return res.status(204).send();
 });
 
 router.get('/private', loggedIn(), function(req, res, next) {
-  // console.log('private');
   if(req.session.currentUser)
   {
     res.status(200).json({ message: 'private message' });
@@ -112,7 +97,6 @@ router.get('/private', loggedIn(), function(req, res, next) {
 });
 
 router.post('/profile', loggedIn(), function(req, res, next) {
-  // console.log('profile');
   if(req.session.currentUser)
   {
     let userData = {
@@ -137,14 +121,11 @@ router.post('/profile', loggedIn(), function(req, res, next) {
 });
 
 router.post('/profile/edit', loggedIn(), function(req, res, next) {
-  // console.log('profile/edit');
   const field = req.body.field; //object
   const value = req.body.value; //string
-  // console.log('currentUser: ', req.session.currentUser);
   let updateData = {}
   if(field.name) updateData.userName = value;
   else if(field.email) updateData.email = value;
-  // else if(field.password) updateData.password = value;
   else if(field.quote) updateData.quote = value;
   User.findByIdAndUpdate(req.session.currentUser._id, updateData, { 'new': true})
   .then(result => {
@@ -155,10 +136,8 @@ router.post('/profile/edit', loggedIn(), function(req, res, next) {
         res.status(404).json({ error: 'not-found' });
       }
       req.session.currentUser = user;
-      // console.log('currentUser: ',req.session.currentUser);
       res.json(user);
     })
-    // console.log('result: ', result);
     return res.json(result);
   })
 });

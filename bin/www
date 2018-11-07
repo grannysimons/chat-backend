@@ -27,13 +27,9 @@ var server = http.createServer(app);
 const io = require('socket.io')(server);
 const SocketManager = require('../SocketManager');
 SocketManager.initIO(io);
-// SocketManager.initIOFileReception();
-// SocketManager.testMethod();
 
 
-// io.on('connection', SocketManager.socketConnected);
 server.listen(port, () => {
-  console.log('Connected to port: ', port);
 });
 
 /**

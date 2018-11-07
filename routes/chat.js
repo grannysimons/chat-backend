@@ -10,13 +10,10 @@ const multer  = require('multer');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // console.log('destination!!');
     cb(null, 'public/audios/');
   },
   filename: function (req, file, cb) {
-    // console.log('storage: file - ', file);
     let extension = '.wav';
-    // if(file.mimetype === 'audio/mpeg-3' || file.mimetype === 'audio/mpeg') extension = '.mp3';
     if(file.mimetype === 'audio/mpeg-3') extension = '.mp3';
 
     cb(null, file.originalname + extension);
@@ -42,7 +39,6 @@ dateChatFormat = ( date ) => {
 }
 
 router.post('/sendAudio', upload.single('audioFile'), (req, res, next) => {
-  console.log('sendAudio: ', req.file);
   return res.json({ 'response': 'ok' });
 });
 
@@ -54,14 +50,62 @@ router.post('/getUser/:email', (req,res,next) => {
   })
 })
 
-router.post('/delete/:idUser', (req,res,next) => {
+router.post('/deleteUser/:idUser', (req,res,next) => {
   let idUser = req.params.idUser;
   User.findByIdAndDelete(idUser)
   .then(user => {
-    return res.json({ delete: "ok" });
+    let filter = { $or: [
+      {'user1.idUser': idUser},
+      {'user2.idUser': idUser},
+    ]}
+    Chat.find(filter)
+    .then(chats => {
+      chats.forEach(chat => {
+        Chat.findByIdAndDelete(chat.idChat)
+        Message.find({idChat: chat.idChat})
+        delete req.session.currentUser;
+      });
+    })
+    return res.json({ deleteUser: "ok" });
   })
   .catch(error => {
-    return res.json({ error });
+    return res.json({ deleteUser: "deleteUser error: ",error});
+  })
+})
+
+router.post('/deleteChats/:idUser', (req,res,next) => {
+  let idUser = req.params.idUser;
+  let filter = { $or: [
+    {'user1.idUser': idUser},
+    {'user2.idUser': idUser},
+  ]}
+  Chat.deleteMany(filter)
+  .then(chats => {
+    return res.json({ deleteChats: "ok" });
+  })
+  .catch(error => {
+    return res.json({ deleteChats: "deleteChat error: ",error});
+  })
+})
+
+router.post('/deleteMessages/:idUser', (req,res,next) => {
+  let idUser = req.params.idUser;
+  let filter = { $or: [
+    {'user1.idUser': idUser},
+    {'user2.idUser': idUser},
+  ]}
+  var generalError='';
+  Chat.find(filter)
+  .then(chats => {
+    chats.forEach(chat => {
+      Message.deleteMany({idChat: chat._id})
+      .then(result => {
+      })
+      .catch(error => {
+        generalError = error;
+      });
+    });
+    return generalError === '' ? res.json({ deleteMessages: "ok" }) : res.json({ deleteMessages: "error deleteMessages: ", error });
   })
 })
 
@@ -104,13 +148,12 @@ router.post('/newChat', (req, res, next) => {
         }
         else
         {
-          // console.log("aquest xat ja existeix");
         }
       })
     }
   })
   .catch(error => {
-    // console.log('error: ',error);
+    console.log('error: ',error);
   })
 });
 
@@ -121,22 +164,8 @@ router.post('/chatList', (req,res,next) => {
   .populate('user2.idUser')
   .sort({dateLastMessage: -1})
   .then(chats => {
+    console.log('chatList: ', chats);
     SocketManager.newUser(req.session.currentUser._id);
-
-    // chats.forEach(chat => {
-    //   const idUser = req.session.currentUser._id;
-    //   idChat = chat._id;
-    //   Chat.findById(idChat)
-    //   .then(chat => {
-    //     const lastSeenUser = chat.user1.idUser === idUser ? chat.user1.lastSeen : chat.user2.lastSeen;
-    //     Message.find({ time: {$gt: lastSeenUser}})
-    //     .then(messages => {
-    //       let numberOfNewMessages = messages.length;
-    //       chat.num = numberOfNewMessages;
-    //     })
-    //   })
-    // });
-    // console.log('chats: ', chats);
     return res.json({ chats });
   })
   .catch(error =>{
@@ -147,7 +176,6 @@ router.post('/chatList', (req,res,next) => {
 
 router.post('/typing/:email', (req, res, next) => {
   let email = req.params.email;
-  // let userId = req.session.currentUser._id;
   let filter = { $or: [
     {'user1.email': email},
     {'user2.email': email},
@@ -160,7 +188,7 @@ router.post('/typing/:email', (req, res, next) => {
     return res.json({ result: 'ok' });
   })
   .catch(error => {
-    console.log('SocketManager error: ', error);
+    // console.log('SocketManager error: ', error);
   })
 })
 
@@ -178,7 +206,7 @@ router.post('/stoppedTyping/:email', (req, res, next) => {
     return res.json({ result: 'ok' });
   })
   .catch(error => {
-    console.log('SocketManager error: ', error);
+    // console.log('SocketManager error: ', error);
   })
 })
 
@@ -256,7 +284,7 @@ router.post('/:idUser/:idChat/totalNewMessages', (req, res, next)=>{
     Message.find({ time: {$gt: lastSeenUser}})
     .then(messages => {
       let numberOfNewMessages = messages.length;
-      console.log('number of new messages: ', numberOfNewMessages);
+      // console.log('number of new messages: ', numberOfNewMessages);
       return res.json({totalNewMessages: numberOfNewMessages});
     })
   })
@@ -264,21 +292,3 @@ router.post('/:idUser/:idChat/totalNewMessages', (req, res, next)=>{
 });
 
 module.exports = router;
-
-
-
-// - POST /chat/list (així utilitzem currentuser)
-//   - get list
-// - GET /chat/:id
-//   - get messages from concrete chat
-// - POST /chat/:id
-//   - publish message
-// - POST /chat/new
-
-
-//   - chat.list()
-//   - chat.detail(idChat)
-//   - chat.search({user: string, text: string})
-//   - chat.create({user})
-//   - chat.read(idChat)
-//   - creates new chat  
