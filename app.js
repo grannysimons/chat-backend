@@ -15,6 +15,7 @@ const mongoose = require('./database');
 
 const app = express();
 
+
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', process.env.frontend_BaseURL);
   res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');

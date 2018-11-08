@@ -13,41 +13,41 @@ const SocketManager = require('../SocketManager');
 router.get('/me', function(req, res, next) {
   if(req.session.currentUser)
   {
-    res.json(req.session.currentUser);
+    return res.json(req.session.currentUser);
   }
   else
   {
-    res.status(404).json({ error: 'not-logged' });
+    return res.status(404).json({ error: 'not-logged' });
   }
 });
 
 router.post('/login', notLoggedIn(), function(req, res, next) {
   if(req.session.currentUser)
   {
-    res.status(401).json({ error: 'unauthorized' });
+    return res.status(401).json({ error: 'unauthorized' });
   }
   const email = req.body.email;
   const password = req.body.password;
 
   if(!email || !password)
   {
-    res.status(422).json({ error: 'validation' });
+    return res.status(422).json({ error: 'validation' });
   }
   User.findOne({ email })
   .then(( user ) => {
     if(!user)
     {
-      res.status(404).json({ error: 'not-found' });
+      return res.status(404).json({ error: 'not-found' });
     }
     if(bcrypt.compareSync(password, user.password))
     {
       req.session.currentUser = user;
       console.log('currentUser: ',req.session.currentUser);
-      res.json(user);
+      return res.json(user);
     }
     else
     {
-      res.status(404).json({ error: 'not-found' });
+      return res.status(404).json({ error: 'not-found' });
     }
   })
   return;
