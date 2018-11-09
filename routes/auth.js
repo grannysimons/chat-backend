@@ -8,7 +8,6 @@ const { loggedIn } = require('../helpers/is-logged');
 const { notLoggedIn } = require('../helpers/is-not-logged');
 
 const SocketManager = require('../SocketManager');
-// io.on('connection', SocketManager.socketConnected);
 
 router.get('/me', function(req, res, next) {
   if(req.session.currentUser)
@@ -17,27 +16,27 @@ router.get('/me', function(req, res, next) {
   }
   else
   {
-    return res.status(404).json({ error: 'not-logged' });
+    return res.json({ error: 'user not logged in' });
   }
 });
 
 router.post('/login', notLoggedIn(), function(req, res, next) {
   if(req.session.currentUser)
   {
-    return res.status(401).json({ error: 'unauthorized' });
+    return res.json({ error: 'unauthorized' });
   }
   const email = req.body.email;
   const password = req.body.password;
 
   if(!email || !password)
   {
-    return res.status(422).json({ error: 'validation' });
+    return res.json({ error: 'missing fields' });
   }
   User.findOne({ email })
   .then(( user ) => {
     if(!user)
     {
-      return res.status(404).json({ error: 'not-found' });
+      return res.json({ error: 'user or password incorrect' });
     }
     if(bcrypt.compareSync(password, user.password))
     {
@@ -47,25 +46,29 @@ router.post('/login', notLoggedIn(), function(req, res, next) {
     }
     else
     {
-      return res.status(404).json({ error: 'not-found' });
+      return res.json({ error: 'user or password incorrect' });
     }
   })
   return;
 });
 
 router.post('/signup', notLoggedIn(),function(req, res, next) {
+  if(req.session.currentUser)
+  {
+    return res.json({ error: 'unauthorized' });
+  }
   const email = req.body.email;
   const password = req.body.password;
 
   if(!email || !password)
   {
-    return res.status(422).json({ error: 'validation' });
+    return res.json({ error: 'missing fields' });
   }
   User.findOne({ email })
   .then((user) => {
     if( user )
     {
-      return res.status(422).json({ error: 'username-not-unique' });
+      return res.json({ error: 'user already exists. Try to log in' });
     }
     const salt = bcrypt.genSaltSync(10);
     const hashPass = bcrypt.hashSync(password, salt);
@@ -76,7 +79,6 @@ router.post('/signup', notLoggedIn(),function(req, res, next) {
     return newUser.save()
     .then(() => {
       req.session.currentUser = newUser;
-      console.log('signup - newUser: ', newUser);
       return res.json(newUser);
     })
   })
