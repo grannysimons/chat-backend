@@ -110,20 +110,31 @@ router.post('/deleteMessages/:idUser', (req,res,next) => {
 })
 
 router.post('/newChat', (req, res, next) => {
+  console.log('newChat ',req.body.email);
   User.findOne({ email: req.body.email })
   .then(user => {
-    if(user)
+  console.log('newChat 0: ', user);
+  console.log('req.session.currentUser.email: ',req.session.currentUser.email);
+      console.log('req.body.email: ',req.body.email);
+  if(user)
     {
+  console.log('newChat 1');
+
       const filter = { 
         $or: [
           {$and: [{'user1.email': req.session.currentUser.email}, {'user2.email': req.body.email}]},
           {$and: [{'user1.email': req.body.email}, {'user2.email': req.session.currentUser.mail}]}
         ]
       };
+
       Chat.findOne(filter)
       .then(chat => {
+  console.log('newChat 2');
+
         if(!chat)
         {
+  console.log('newChat 3');
+
           const newChat = Chat({
             dateLastMessage: Date.now(),
             user1: {
@@ -139,21 +150,34 @@ router.post('/newChat', (req, res, next) => {
           });
           return newChat.save()
           .then(() => {
+  console.log('newChat 4');
+
             SocketManager.newChat({from: req.session.currentUser._id, to: user._id, chat});
             return res.json(newChat);
           })
           .catch((error) => {
-            return res.json(error);
+  console.log('newChat 5');
+
+            return res.json({error: 'error setting up new chat'});
           })
         }
         else
         {
+  console.log('newChat 6');
+
+          return res.json({error: 'chat already exists'});
         }
       })
+    }
+    else
+    {
+      return res.json({error: "user doesn't exist"});
     }
   })
   .catch(error => {
     console.log('error: ',error);
+    return res.json({error: error});
+
   })
 });
 
