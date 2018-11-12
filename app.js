@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const logger = require('morgan');
 const session = require('express-session');
 const MongoStore = require("connect-mongo")(session);
+var cors = require('cors');
 
 const authRouter = require('./routes/auth');
 const chatRouter = require('./routes/chat');
@@ -15,6 +16,19 @@ const mongoose = require('./database');
 
 const app = express();
 
+var whitelist = [process.env.frontend_BaseURL];
+var corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  }
+}
+
+// Then pass them to cors:
+app.use(cors(corsOptions));
 
 app.use((req, res, next) => {
   // res.setHeader('Access-Control-Allow-Origin', process.env.frontend_BaseURL);
