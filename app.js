@@ -29,15 +29,15 @@ app.use(cors());
 //   }
 // }
 
-app.use((req, res, next) => {
-  // res.setHeader('Access-Control-Allow-Origin', process.env.frontend_BaseURL);
-  res.setHeader('Access-Control-Allow-Origin', 'https://txatapp.firebaseapp.com');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.setHeader('Access-Control-Allow-Credentials', true);
+// app.use((req, res, next) => {
+//   // res.setHeader('Access-Control-Allow-Origin', process.env.frontend_BaseURL);
+//   res.setHeader('Access-Control-Allow-Origin', 'https://txatapp.firebaseapp.com');
+//   res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+//   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+//   res.setHeader('Access-Control-Allow-Credentials', true);
 
-  next();
-});
+//   next();
+// });
 
 // sessions handler
 app.use(session({
