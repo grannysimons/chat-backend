@@ -10,6 +10,7 @@ const { notLoggedIn } = require('../helpers/is-not-logged');
 const SocketManager = require('../SocketManager');
 
 router.get('/me', function(req, res, next) {
+  console.log('me');
   if(req.session.currentUser)
   {
     return res.json(req.session.currentUser);
@@ -21,6 +22,7 @@ router.get('/me', function(req, res, next) {
 });
 
 router.post('/login', notLoggedIn(), function(req, res, next) {
+  console.log('login');
   if(req.session.currentUser)
   {
     return res.json({ error: 'unauthorized' });
@@ -41,7 +43,6 @@ router.post('/login', notLoggedIn(), function(req, res, next) {
     if(bcrypt.compareSync(password, user.password))
     {
       req.session.currentUser = user;
-      console.log('currentUser: ',req.session.currentUser);
       return res.json(user);
     }
     else
@@ -53,6 +54,7 @@ router.post('/login', notLoggedIn(), function(req, res, next) {
 });
 
 router.post('/signup', notLoggedIn(),function(req, res, next) {
+  console.log('signup');
   if(req.session.currentUser)
   {
     return res.json({ error: 'unauthorized' });
@@ -86,11 +88,13 @@ router.post('/signup', notLoggedIn(),function(req, res, next) {
 });
 
 router.post('/logout', loggedIn(), function(req, res, next) {
+  console.log('logout');
   delete req.session.currentUser;
   return res.status(204).send();
 });
 
 router.get('/private', loggedIn(), function(req, res, next) {
+  console.log('private');
   if(req.session.currentUser)
   {
     res.status(200).json({ message: 'private message' });
@@ -99,6 +103,7 @@ router.get('/private', loggedIn(), function(req, res, next) {
 });
 
 router.post('/profile', loggedIn(), function(req, res, next) {
+  console.log('profile');
   if(req.session.currentUser)
   {
     let userData = {
@@ -123,6 +128,7 @@ router.post('/profile', loggedIn(), function(req, res, next) {
 });
 
 router.post('/profile/edit', loggedIn(), function(req, res, next) {
+  console.log('/profile/edit');
   const field = req.body.field; //object
   const value = req.body.value; //string
   let updateData = {}

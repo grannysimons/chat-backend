@@ -266,6 +266,34 @@ router.post('/:email/send', (req,res,next) => {
   })
 })
 
+router.post('getNewMessages/:email', (req,res,event) => {
+  const emailOther = req.params.email;
+  const emailUser = req.session.currentUser.email;
+  Chat.findOne({$or: [
+    {'user1.email': emailOther, 'user2.email': emailUser}, 
+    {'user1.email': emailUser, 'user2.email': emailOther}
+  ]})
+  .then(chat => {
+    const dateLastMessage = chat.dateLastMessage;
+    let dateLastSeen = 0;
+    let userId = '';
+    if(chat.user1.email === emailUser)
+    {
+      dateLastSeen = chat.user1.lastSeen;
+      userId = chat.user1.idUser;
+    }
+    else
+    {
+      dateLastSeen = chat.user2.lastSeen;
+      userId = chat.user2.idUser;
+    }
+    if(dateLastMessage > dateLastSeen)
+    {
+      SocketManager.newMessages(userId, chat.idChat);
+    }
+  })
+});
+
 router.post('/:email', (req,res,next) => {
   let email = req.params.email;
   let filter = {

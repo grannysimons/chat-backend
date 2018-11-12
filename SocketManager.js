@@ -28,17 +28,18 @@ class SocketManager {
     this.connectToNamespace(destUserId);
     this.socket.emit(STOPPED_TYPING, idChat);
   }
+  newMessages(userId, idChat){
+    console.log('newMessages!!!');
+    this.connectToNamespace(userId);
+    this.socket.emit(NEW_MESSAGES, idChat);
+  }
   connectToNamespace (nsp){
-    // console.log('connectToNamespace', nsp);
     this.socket = this.io.of('/'+nsp);
     this.socket.on('connection', (sk) => {
-      // console.log('connectat!!!');
     });
     this.socket.on(TYPING, (msg) => {
-      // console.log('user typing! msg: ', msg);
     });
     this.socket.on(STOPPED_TYPING, (sk) => {
-      // console.log('user stopped typing!');
     });
    
     return;
