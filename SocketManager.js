@@ -10,7 +10,6 @@ class SocketManager {
     this.connectToNamespace(to);
     this.socket.emit(NEW_CHAT, chat);
     this.socket.on('disconnection', function(){
-      // console.log('desconnectat');
     })
   }
   newUser(userId){
@@ -29,7 +28,6 @@ class SocketManager {
     this.socket.emit(STOPPED_TYPING, idChat);
   }
   newMessages(userId, idChat){
-    console.log('newMessages!!!');
     this.connectToNamespace(userId);
     this.socket.emit(NEW_MESSAGES, idChat);
   }
@@ -53,7 +51,6 @@ class SocketManager {
   userTyping(userId){
     this.connectTotNamespace(userId);
     this.socket.on('broadcast', (message) => {
-      // console.log('broadcast event: ',message);
     })
   }
   userStoppedTyping(){
