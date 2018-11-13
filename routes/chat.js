@@ -7,8 +7,6 @@ const Message = require("../models/message");
 const SocketManager = require("../SocketManager");
 const multer = require("multer");
 
-const transcription = require("../lib/transcription-service");
-
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
     cb(null, "public/audios/");
