@@ -42,15 +42,18 @@ dateChatFormat = ( date ) => {
 router.post('/sendAudio', upload.single('audioFile'), (req, res, next) => {
   // console.log('originalName! ', req.file.originalname);
   // console.log('path! ', req.file.path);
-  transcription.transcript(req.file.path)
-  .then(response => {
-    console.log('response chat.js: ');
-    return res.json({ 'response': 'ok' });
-  })
-  .catch(error => {
-    console.log('error chat.js: ');
-    return res.json({ 'response': 'ok' });
-  })
+  return res.json({ 'response': 'ok' });
+
+
+  // transcription.transcript(req.file.path)
+  // .then(response => {
+  //   console.log('response chat.js: ');
+  //   return res.json({ 'response': 'ok' });
+  // })
+  // .catch(error => {
+  //   console.log('error chat.js: ');
+  //   return res.json({ 'response': 'ok' });
+  // })
 });
 
 router.post('/getUser/:email', (req,res,next) => {
