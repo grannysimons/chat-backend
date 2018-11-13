@@ -3,10 +3,11 @@ var router = express.Router();
 const Chat = require('../models/chat');
 const User = require('../models/user');
 const Message = require('../models/message');
-const mongoose = require('mongoose');
 
 const SocketManager = require('../SocketManager');
 const multer  = require('multer');
+
+const transcription = require('../lib/transcription-service');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -39,7 +40,17 @@ dateChatFormat = ( date ) => {
 }
 
 router.post('/sendAudio', upload.single('audioFile'), (req, res, next) => {
+  console.log('sendAudio! ', req.body);
+  transcription.transcript()
+  .then(response => {
+    console.log('response chat.js: ', response);
   return res.json({ 'response': 'ok' });
+  })
+  .catch(error => {
+    console.log('error chat.js: ', error);
+  return res.json({ 'response': 'ok' });
+
+  })
 });
 
 router.post('/getUser/:email', (req,res,next) => {
@@ -110,7 +121,10 @@ router.post('/deleteMessages/:idUser', (req,res,next) => {
 })
 
 router.post('/newChat', (req, res, next) => {
-  console.log('newChat ',req.body.email);
+  if(req.session.currentUser.email === req.body.email)
+  {
+    return res.json({error: 'cannot open a chat with yourself!'});
+  }
   User.findOne({ email: req.body.email })
   .then(user => {
   console.log('newChat 0: ', user);
@@ -129,12 +143,8 @@ router.post('/newChat', (req, res, next) => {
 
       Chat.findOne(filter)
       .then(chat => {
-  console.log('newChat 2');
-
         if(!chat)
         {
-  console.log('newChat 3');
-
           const newChat = Chat({
             dateLastMessage: Date.now(),
             user1: {
@@ -150,21 +160,15 @@ router.post('/newChat', (req, res, next) => {
           });
           return newChat.save()
           .then(() => {
-  console.log('newChat 4');
-
             SocketManager.newChat({from: req.session.currentUser._id, to: user._id, chat});
             return res.json(newChat);
           })
           .catch((error) => {
-  console.log('newChat 5');
-
             return res.json({error: 'error setting up new chat'});
           })
         }
         else
         {
-  console.log('newChat 6');
-
           return res.json({error: 'chat already exists'});
         }
       })
