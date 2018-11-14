@@ -7,7 +7,6 @@ const bodyParser = require('body-parser');
 const logger = require('morgan');
 const session = require('express-session');
 const MongoStore = require("connect-mongo")(session);
-// var cors = require('cors');
 
 const authRouter = require('./routes/auth');
 const chatRouter = require('./routes/chat');
@@ -16,22 +15,8 @@ const mongoose = require('./database');
 
 const app = express();
 
-// app.use(cors());
-
-// var whitelist = [process.env.frontend_BaseURL];
-// var corsOptions = {
-//   origin: function (origin, callback) {
-//     if (whitelist.indexOf(origin) !== -1) {
-//       callback(null, true)
-//     } else {
-//       callback(new Error('Not allowed by CORS'))
-//     }
-//   }
-// }
-
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', process.env.frontend_BaseURL);
-  // res.setHeader('Access-Control-Allow-Origin', 'https://txatapp.firebaseapp.com');
   res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   res.setHeader('Access-Control-Allow-Credentials', true);
